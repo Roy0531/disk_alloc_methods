@@ -1,14 +1,17 @@
 #include <iostream>
+#include <vector>
+#include <algorithm>
 using namespace std;
 //gcc p.cpp -lstdc++
-
+//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
 int main(int argc, char* argv[]) {
     // Check if a file name is provided
     if (argc < 2) {
-        cerr << "Usage: " << argv[0] << " <file_name>" << endl;
+        cerr << "Usage: " << argv[0] << " <contiguous|chained|indexed>" << endl;
         return 1;
     }
 
+    vector<string> methodList = {"contiguous", "chained", "indexed"};
     string instlist =   "\n1) Display a file\n"
                         "2) Display the file table\n"
                         "3) Display the free space bitmap\n"
@@ -18,6 +21,12 @@ int main(int argc, char* argv[]) {
                         "7) Delete a file\n"
                         "8) Exit\n";
     int userChoice;
+    string method = argv[1];
+    if (!(find(methodList.begin(), methodList.end(), method) != methodList.end())) {
+        cerr << method << " is not a valid method. Please choose one of the following methods: contiguous|chained|indexed" << endl;
+        return 1;
+    }
+    
     while(1){
         cout << instlist << endl;
         std::cout << "Choice: ";

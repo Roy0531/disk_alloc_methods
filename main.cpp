@@ -19,10 +19,22 @@ int main(int argc, char* argv[]) {
     FileSystem fs;
     
     string method = argv[1];
-    ui.validateMethod(method);
+    if(ui.validateMethod(method) == -1){
+        return 1;
+    };
 
     while(1){
         int choice = ui.getUserOption();
-        fs.handler(choice);
+        switch(choice){
+            case 1: fs.displayFile(); break;
+            case 2: fs.displayFileTable(); break;
+            case 3: fs.displayBitmap(); break;
+            case 4: fs.displayDiskBlock(); break;
+            case 5: fs.copyToReal(); break;
+            case 6: fs.copyToSimu(); break;
+            case 7: fs.deleteFile(); break;
+            case 8: cout << "Bye!\n" << endl; return 0 ;
+            default: cout << "Please choose one of the valid options listed above" << endl;
+        }
     }
 }

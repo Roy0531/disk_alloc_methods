@@ -14,12 +14,12 @@ private:
                         "8) Exit\n";
     vector<string> methodList = {"contiguous", "chained", "indexed"};
 public:
-    void validateMethod(string method){
+    int validateMethod(string method){
         if (!(find(methodList.begin(), methodList.end(), method) != methodList.end())) {
             cerr << method << " is not a valid method. \nPlease choose one of the following methods: contiguous|chained|indexed" << endl;
-            exit(1);
+            return -1;
         }
-        return;
+        return 0;
     }
 
     int getUserOption(){

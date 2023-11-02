@@ -9,7 +9,6 @@ using namespace std;
 //gcc main.cpp -lstdc++
 //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
 int main(int argc, char* argv[]) {
-    // Check if a file name is provided
     if (argc < 2) {
         cerr << "Usage: " << argv[0] << " <contiguous|chained|indexed>" << endl;
         return 1;

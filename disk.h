@@ -1,10 +1,12 @@
+using namespace std;
+
 class Disk {
 private:
-    int disk[256][512];
+    char disk[256][512];
 public:
     Disk(){
         for (int i = 0; i < sizeof(disk[0]); i++){
-            disk[0][i] = 0;
+            disk[0][i] = '0';
         }
     }
 

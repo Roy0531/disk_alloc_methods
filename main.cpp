@@ -13,14 +13,15 @@ int main(int argc, char* argv[]) {
         cerr << "Usage: " << argv[0] << " <contiguous|chained|indexed>" << endl;
         return 1;
     }
-
-    UserInterface ui;
-    FileSystem fs;
-    
     string method = argv[1];
+    UserInterface ui;
+    
     if(ui.validateMethod(method) == -1){
         return 1;
     };
+
+    FileSystem fs(method);
+    
 
     while(1){
         int choice = ui.getUserOption();

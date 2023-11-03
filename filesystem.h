@@ -1,11 +1,18 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 using namespace std;
 
 class FileSystem {
 private:
+    string method;
     int blockSize = 512;
     Disk d;
 public:
+    FileSystem(string m) {
+        method = m;
+        cout << "method: " + method << endl;
+    }
     void displayFile(){
         string fn;
         cout << "File name: " << endl;
@@ -25,7 +32,13 @@ public:
         return;
     }
     void displayDiskBlock(){
-        cout << "displayDiskBlock" << endl;
+        int blockNum;
+        cout << "Block Number: " << endl;
+        cin >> blockNum;
+        for (int i = 0; i < blockSize; i++) {
+            if ((i != 0) && (i % 32 == 0)) cout << endl; 
+            cout << d.read(blockNum, i);
+        }
         return;
     }
     void copyToReal(){

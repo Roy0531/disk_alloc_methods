@@ -170,13 +170,13 @@ class FileSystem {
         void copyToReal(){
             string src, dest, data;
             src = getFileName("Copy from: ");
+            int result = searchFile(src, method);
+            if(result == -1){
+                return;
+            }
             dest = getFileName("Copy to: ");
             ofstream f(dest, ios::out);
                 if (f.is_open()) {
-                    int result = searchFile(src, method);
-                    if(result == -1){
-                        return;
-                    }
                     int arrlen = sizeof(fileData1) / sizeof(fileData1[0]);
                     if (arrlen == 0) {
                         return;

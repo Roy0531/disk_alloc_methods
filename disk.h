@@ -1,27 +1,42 @@
 using namespace std;
 
+const int num_blocks = 256;
+const int block_size = 512;
+
 class Disk {
-private:
-    char disk[256][512];
 public:
     Disk(){
-        for (int i = 0; i < sizeof(disk[0]); i++){
-            disk[0][i] = '0';
+        disk[num_blocks][block_size] = {};
+        for (int i = 0; i < num_blocks; i++) {
+            if (i == 0 || i == 1){
+                disk[1][i] = '1';
+            } else {
+                disk[1][i] = '0';
+            } 
         }
+    }
+    bool write(int block_num, const string& data) {
+        if (block_num < 0 || block_num >= num_blocks || data.length() > block_size) {
+            return false;
+        }
+        for (int j = 0; j < block_size; j++) {
+            disk[block_num][j] = data[j];
+        }
+        return true;
     }
 
-    void write(int blockAdd, int offset, int val){
-        if (blockAdd > 255 || blockAdd < 0 || offset > 511 || offset < 0){
-            cerr << "Invalid address access. Address: disk[" + to_string(blockAdd) + "][" + to_string(blockAdd) + "] does not exist."  << endl;
+    string read(int block_num) {
+        if (block_num < 0 || block_num >= num_blocks) {
+            return "";
         }
-        disk[blockAdd][blockAdd] = val;
-        return;
+        string data;
+        for (int j = 0; j < block_size; j++) {
+            data += disk[block_num][j];
+        }
+        return data;
     }
 
-    int read(int blockAdd, int offset){
-        if (blockAdd > 255 || blockAdd < 0 || offset > 511 || offset < 0){
-            cerr << "Invalid address access. Address: disk[" + to_string(blockAdd) + "][" + to_string(blockAdd) + "] does not exist."  << endl;
-        }
-        return disk[blockAdd][offset];
-    }
+private:
+    char disk[num_blocks][block_size] = {};
 };
+

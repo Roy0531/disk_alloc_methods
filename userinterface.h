@@ -14,6 +14,7 @@ private:
                         "8) Exit\n";
     vector<string> methodList = {"contiguous", "chained", "indexed"};
 public:
+    // working
     int validateMethod(string method){
         if (!(find(methodList.begin(), methodList.end(), method) != methodList.end())) {
             cerr << method << " is not a valid method. \nPlease choose one of the following methods: contiguous|chained|indexed" << endl;
@@ -22,12 +23,12 @@ public:
         return 0;
     }
 
+    // working
     int getUserOption(){
         int choice;
         cout << instlist << endl;
         cout << "Choice: ";
         cin >> choice;
-
         return choice;
     }
 };

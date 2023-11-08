@@ -1,3 +1,5 @@
 *.docx
 a.out
 .vscode
+*.txt
+test.cpp

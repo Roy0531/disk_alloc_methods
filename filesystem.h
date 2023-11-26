@@ -3,6 +3,8 @@
 #include <string>
 #include <fstream>
 #include <cmath>
+#include <sstream>
+#include <vector>
 #include "disk.h"
 using namespace std;
 
@@ -18,23 +20,27 @@ class FileSystem {
         int fileData2[2] = {};
 
         int searchFile(string fileName, string& method){
-            string data = d.read(0);
+            string data;
+            int fileIdx;
+            int digit;
 
-            int fileIdx = data.find(fileName);
+            // fetch the file allocation table data
+            data = d.read(0);
+            fileIdx = data.find(fileName);
 
             if (fileIdx == -1) {
                 cout << "File doesn't exist." << endl; 
                 return -1;
             }
+
             if (method == "contiguous" || method == "chained"){
                 int startBlock = fileIdx + 8;
                 int length = startBlock + 3;
                 int startBlockInt = 0;
                 int lengthInt = 0;
-                int digit;
 
                 fileData1[0] = fileIdx;
-
+                // convert the start block in character to int type
                 for (int i = startBlock; i < startBlock+3; i++){
                     if (i == startBlock && data[i] != ' '){
                         digit = data[i] - '0';
@@ -48,7 +54,7 @@ class FileSystem {
                     }
                 }
                 fileData1[1] = startBlockInt;
-                
+                // convert the length in character to int type
                 for (int i = length; i < length+2; i++){
                     if (i == length && data[i] != ' '){
                         digit = data[i] - '0';
@@ -59,30 +65,29 @@ class FileSystem {
                     }
                 }
                 fileData1[2] = lengthInt;
-
             } else {
                 int idxBlock = fileIdx + 8;
-                int indBlockInt = 0;
-                int digit;
+                int idxBlockInt = 0;
 
                 fileData2[0] = fileIdx;
-
+                // convert the index block in character to int
                 for (int i = idxBlock; i < idxBlock+3; i++){
                     if (i == idxBlock && data[i] != ' '){
                         digit = data[i] - '0';
-                        indBlockInt += 100 * digit;
+                        idxBlockInt += 100 * digit;
                     } else if (i == idxBlock+1 && data[i] != ' '){
                         digit = data[i] - '0';
-                        indBlockInt += 10 * digit;
+                        idxBlockInt += 10 * digit;
                     } else if (i == idxBlock+2){
                         digit = data[i] - '0';
-                        indBlockInt +=  digit;
+                        idxBlockInt +=  digit;
                     }
                 }
-                fileData2[1] = indBlockInt;
+                fileData2[1] = idxBlockInt;
             }
             return 0;
         }
+
         string getFileName(string prompt){
             string fn;
             int len;
@@ -94,33 +99,33 @@ class FileSystem {
             } while(len > 8);
             return fn;
         }
+    
     public:
         FileSystem(string m) {
             method = m;
         }
+        
         void displayFile(){
-            string fn;
-            string data;
+            string fn, data;
+
             fn = getFileName("File name: ");
             int result = searchFile(fn, method);
-            if(result == -1){
-                return;
-            }
+            if(result == -1) return;
             int arrlen = sizeof(fileData1) / sizeof(fileData1[0]);
-            if (arrlen == 0) {
-                return;
-            }
+            if (arrlen == 0) return;
             if (method == "contiguous" || method == "chained"){
                 int start  = fileData1[1];
                 int length = fileData1[2];
                 if (method == "contiguous"){
+                    cout << endl;
                     for (int i = start; i < start+length; i++){
                         data = d.read(i);
                         cout << data;
                     }
+                    cout << endl;
                 } else {
-                    string content;
                     int nextIdx = start;
+                    cout << endl;
                     for (int i = 0; i < length; i++){
                         data = d.read(nextIdx);
                         nextIdx = data[0];
@@ -128,25 +133,36 @@ class FileSystem {
                             cout << data[j];
                         }
                     }
+                    cout << endl;
                 }
             } else {
-                int idxBlock  = fileData2[1];
-                string indices = d.read(idxBlock);
-                int idx = 0;
-                while (indices[idx] != '\0') {
-                    int n = indices[idx] - '0';
-                    data = d.read(n);
-                    cout << data;
-                    idx++;
+                int idxBlock;
+                string indices;
+
+                idxBlock  = fileData2[1];
+                indices = d.read(idxBlock);
+                istringstream iss(indices);
+                vector<int> indicesInt;
+                int number;
+                while (iss >> number) {
+                    indicesInt.push_back(number);
                 }
+                cout << endl;
+                for (int num : indicesInt) {
+                    data = d.read(num);
+                    cout << data;
+                }
+                cout << endl;
             }
             return;
         }
+
         void displayFileTable(){
             string data = d.read(0);
             cout << data;
             return;
         }
+        
         void displayBitmap(){
             string data = d.read(1);
             cout << endl;
@@ -157,6 +173,7 @@ class FileSystem {
             cout << endl;
             return;
         }
+        
         void displayDiskBlock(){
             string data;
             int blockNum;
@@ -167,61 +184,64 @@ class FileSystem {
             cout << data << endl;
             return;
         }
+
         void copyToReal(){
             string src, dest, data;
+            int result;
             src = getFileName("Copy from: ");
-            int result = searchFile(src, method);
-            if(result == -1){
-                return;
-            }
+            result = searchFile(src, method);
+            if(result == -1) return;
             dest = getFileName("Copy to: ");
             ofstream f(dest, ios::out);
                 if (f.is_open()) {
-                    int arrlen = sizeof(fileData1) / sizeof(fileData1[0]);
-                    if (arrlen == 0) {
-                        return;
-                    }
+                    int arrlen, start, length;
+
+                    arrlen = sizeof(fileData1) / sizeof(fileData1[0]);
+                    if (arrlen == 0) return;
                     if (method == "contiguous" || method == "chained"){
-                    int start  = fileData1[1];
-                    int length = fileData1[2];
-                    if (method == "contiguous"){
-                        for (int i = start; i < start+length; i++){
-                            data = d.read(i);
+                        start  = fileData1[1];
+                        length = fileData1[2];
+                        if (method == "contiguous"){
+                            for (int i = start; i < start+length; i++){
+                                data = d.read(i);
+                                for (int j = 0; j < blockSize; j++){
+                                    if (data[j] != '\0'){
+                                        f << data[j];
+                                    }
+                                }
+                            }
+                        } else {
+                            int nextIdx;
+                            nextIdx = start;
+                            for (int i = 0; i < length; i++){
+                                data = d.read(nextIdx);
+                                nextIdx = data[0];
+                                for (int j = 1; j < blockSize; j++){
+                                    if (data[j] != '\0') f << data[j];
+                                }
+                            }
+                        }
+                    } else {
+                        int idxBlock;
+                        string indices;
+
+                        idxBlock  = fileData2[1];
+                        indices = d.read(idxBlock);
+                        istringstream iss(indices);
+                        vector<int> indicesInt;
+                        int number;
+                        while (iss >> number) {
+                            indicesInt.push_back(number);
+                        }
+                        for (int i = 0; i < indicesInt.size(); ++i) {
+                            data = d.read(indicesInt[i]);
                             for (int j = 0; j < blockSize; j++){
                                 if (data[j] != '\0'){
                                     f << data[j];
                                 }
                             }
                         }
-                    } else {
-                        string content;
-                        int nextIdx = start;
-                        for (int i = 0; i < length; i++){
-                            data = d.read(nextIdx);
-                            nextIdx = data[0];
-                            char c;
-                            for (int j = 1; j < blockSize; j++){
-                                if (data[j] != '\0'){
-                                    f << data[j];
-                                }
-                            }
-                        }
                     }
-                } else {
-                    int idxBlock  = fileData2[1];
-                    string indices = d.read(idxBlock);
-                    int idx = 0;
-                    while (indices[idx] != '\0') {
-                        int n = indices[idx] - '0';
-                        data = d.read(n);
-                        for (int j = 1; j < blockSize; j++){
-                            if (data[j] != '\0'){
-                                    f << data[j];
-                            }
-                        }
-                        idx++;
-                    }
-                }
                 f.close();
             } else {
                 cerr << "Error: File failed to open" << endl;
@@ -229,6 +249,7 @@ class FileSystem {
             }
             return;
         }
+
         void copyToSimu(){
             string src, data;
             int blockNum, fileSizeInt;
@@ -244,7 +265,6 @@ class FileSystem {
                     cerr << "File too large" << endl; 
                     return;
                 }
-                //---------------------------------------------------------
                 if (method == "contiguous"){
                     string target = "";
                     int counter = 0;
@@ -326,7 +346,6 @@ class FileSystem {
                         d.write(i, data);
                     }
                     cout << endl;
-                //---------------------------------------------------------
                 } else if (method == "chained") {
                     // find an available space in the disk
                     data = d.read(1);
@@ -400,8 +419,6 @@ class FileSystem {
                     data[nxtAvailTblIdx+5] = '\n';
 
                     d.write(0, data);
-                    // update the bitmap
-                    // write to the disk
                     char character;
                     for (int i = 0; i < blockNum; i++){
                         data = d.read(availableIdxs[i]);
@@ -560,6 +577,7 @@ class FileSystem {
             cout << "File " << src << " copied" << endl;
             return;
         }
+        
         void deleteFile(){
             string fn;
             string data;
@@ -569,8 +587,8 @@ class FileSystem {
             if(result == -1){
                 return;
             }
-            fileIdx = fileData1[0];
             if (method == "contiguous" || method == "chained"){
+                fileIdx = fileData1[0];
                 // delete the file from the file allocation table
                 data = d.read(0);
                 for(int i = fileIdx; i < fileIdx+13; i++){
@@ -596,16 +614,21 @@ class FileSystem {
                     d.write(1, data);
                 }
             } else {
+                fileIdx = fileData2[0];
                 // update the bitmap
                 data = d.read(1);
                 int idxBlock  = fileData2[1];
                 data[idxBlock] = '0';
-                string indices = d.read(idxBlock);
-                int idx = 0;
-                while (indices[idx] != '\0') {
-                    int n = indices[idx] - '0';
-                    data[n] = '0';
-                    idx++;
+                string indicesStr = d.read(idxBlock);
+
+                istringstream iss(indicesStr);
+                vector<int> indicesint;
+                int number;
+                while (iss >> number) {
+                    indicesint.push_back(number);
+                }
+                for (int i = 0; i < indicesint.size(); ++i) {
+                    data[indicesint[i]] = '0';
                 }
                 d.write(1, data);
                 // delete the file from the file allocation table

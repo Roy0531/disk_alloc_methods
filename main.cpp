@@ -3,9 +3,6 @@
 #include "userinterface.h"
 #include "filesystem.h"
 using namespace std;
-//gcc main.cpp -lstdc++
-//g++ main.cpp -static-libstdc++ -o a.out
-//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
 int main(int argc, char* argv[]) {
     int choice;
     string method;
